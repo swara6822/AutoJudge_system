@@ -2,6 +2,31 @@ import streamlit as st
 import numpy as np
 import joblib
 
+# Page config
+
+st.set_page_config(
+    page_title="AutoJudge",
+    layout="centered"
+)
+
+# Custom CSS (fix red input highlight)
+
+st.markdown(
+    """
+    <style>
+    input, textarea {
+        border: 1px solid #d0d0d0 !important;
+        box-shadow: none !important;
+    }
+    input:focus, textarea:focus {
+        border: 1px solid #a0a0a0 !important;
+        box-shadow: none !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Load trained models
 
 clf = joblib.load("models/classifier.pkl")
@@ -9,54 +34,62 @@ reg = joblib.load("models/regressor.pkl")
 tfidf = joblib.load("models/tfidf.pkl")
 label_encoder = joblib.load("models/label_encoder.pkl")
 
-# App UI
+# Title
 
-st.set_page_config(page_title="AutoJudge", layout="centered")
-
-st.title("AutoJudge")
+st.title("🧠 AutoJudge")
 st.subheader("Predict Programming Problem Difficulty")
 
 st.write(
-    "Enter problem metadata below to predict the difficulty level "
-    "and estimated difficulty rating."
+    "This application predicts the difficulty level and rating of a "
+    "programming problem based on its tags and solve statistics."
 )
 
-# User Inputs
+st.divider()
 
-tag1 = st.text_input("Problem Tag 1", "")
-tag2 = st.text_input("Problem Tag 2", "")
-tag3 = st.text_input("Problem Tag 3", "")
-tag4 = st.text_input("Problem Tag 4", "")
+# Input Section
+
+st.markdown("### 🔹 Enter Problem Details")
+
+tag1 = st.text_input("Problem Tag 1", placeholder="e.g. dp")
+tag2 = st.text_input("Problem Tag 2", placeholder="e.g. greedy")
+tag3 = st.text_input("Problem Tag 3", placeholder="e.g. graphs")
+tag4 = st.text_input("Problem Tag 4", placeholder="optional")
 
 solved = st.number_input(
-    "Number of Users Who Solved the Problem",
+    "Number of users who solved the problem",
     min_value=0,
-    value=1000,
-    step=1
+    value=3000,
+    step=100
 )
+
+st.divider()
 
 # Prediction
 
-if st.button("Predict Difficulty"):
-    # Combine tags
+if st.button("🔍 Predict Difficulty"):
     tags_text = f"{tag1} {tag2} {tag3} {tag4}".strip()
 
-    # TF-IDF transform
     X_tags = tfidf.transform([tags_text])
-
-    # Combine with solved count
     X_input = np.hstack((X_tags.toarray(), [[solved]]))
 
-    # Classification prediction
     class_pred_encoded = clf.predict(X_input)
     class_pred = label_encoder.inverse_transform(class_pred_encoded)[0]
 
-    # Regression prediction
-    rating_pred = reg.predict(X_input)[0]
+    rating_pred = int(reg.predict(X_input)[0])
 
-    # Display Results
+    st.markdown("### 📊 Prediction Result")
 
-    st.success("Prediction Successful!")
+    # Color-coded difficulty
+    if class_pred == "Easy":
+        st.success(f"🟢 Difficulty Level: **{class_pred}**")
+    elif class_pred == "Medium":
+        st.warning(f"🟡 Difficulty Level: **{class_pred}**")
+    else:
+        st.error(f"🔴 Difficulty Level: **{class_pred}**")
 
-    st.markdown(f"### Predicted Difficulty Level: **{class_pred}**")
-    st.markdown(f"### Predicted Difficulty Rating: **{int(rating_pred)}**")
+    st.markdown(f"**Predicted Difficulty Rating:** `{rating_pred}`")
+
+    st.caption("Prediction is based on problem tags and historical solve statistics.")
+
+st.divider()
+
