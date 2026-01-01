@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
@@ -79,13 +80,49 @@ X_train, X_test, y_class_train, y_class_test, y_reg_train, y_reg_test = train_te
 
 # Train models
 
-# Classification model
+# # Classification model
+# clf = LogisticRegression(max_iter=1000)
+# clf.fit(X_train, y_class_train)
+
+# # Regression model
+# reg = LinearRegression()
+# reg.fit(X_train, y_reg_train)
+
+
+# 7. Train improved models (Random Forest)
+
+#  Classification model
+# clf = RandomForestClassifier(
+#     n_estimators=200,
+#     random_state=42,
+#     n_jobs=-1
+# )
+# clf.fit(X_train, y_class_train)
+
+# Regression model
+# reg = RandomForestRegressor(
+#     n_estimators=200,
+#     random_state=42,
+#     n_jobs=-1
+# )
+# reg.fit(X_train, y_reg_train)
+
+
+# 7. Train final models
+
+# Classification model (Logistic Regression)
 clf = LogisticRegression(max_iter=1000)
 clf.fit(X_train, y_class_train)
 
-# Regression model
-reg = LinearRegression()
+# Regression model (Random Forest)
+reg = RandomForestRegressor(
+    n_estimators=200,
+    random_state=42,
+    n_jobs=-1
+)
 reg.fit(X_train, y_reg_train)
+
+
 
 # Evaluation
 
