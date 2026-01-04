@@ -1,72 +1,69 @@
 # AutoJudge – Programming Problem Difficulty Prediction
 
-##  Project Overview
-AutoJudge is a machine learning–based system designed to predict the difficulty of programming problems.
-The project performs two tasks:
+## Project Overview
+AutoJudge is a machine learning–based system designed to predict the difficulty of programming problems using only textual information. The system performs two tasks:
 - Classification of problems into Easy, Medium, or Hard
-- Regression to estimate a numerical difficulty rating
+- Regression to estimate a numerical difficulty score on a 1–10 scale
 
-Predictions are based on problem metadata such as problem tags and the number of users who solved the problem.
-
----
-
-##  Dataset Used
-- Source: Codeforces (publicly available programming problem dataset)
-- Format: CSV file
-- Features Used:
-  - Problem tags
-  - Number of users who solved the problem
-- Target Variables:
-  - Difficulty class (Easy / Medium / Hard)
-  - Problem rating (numerical)
-
-The dataset is included in the `data/` directory of this repository.
+Predictions are based solely on the textual description of programming problems.
 
 ---
 
-##  Approach and Models Used
+## Dataset Used
+The dataset used in this project was provided as part of the project guidelines. It consists of programming problems with the following fields:
+- Problem title
+- Problem description
+- Additional textual fields (input/output descriptions, sample I/O)
+- Difficulty scores (`problem_score`, `problem_class`)
+- Problem URL
+
+In this implementation, only the problem title and main description were used as input features. Other textual fields and non-textual metadata were excluded.
+
+The dataset is stored in JSON Lines (`.jsonl`) format and is available in the `data/` directory.
+
+---
+
+## Approach and Models Used
 
 ### Data Preprocessing
-- Removed rows with missing or invalid values
-- Combined multiple problem tags into a single text feature
-- Converted solve count into numerical format
+- Handled missing textual values by replacing them with empty strings
+- Combined problem title and description into a single unified text field
 
 ### Feature Engineering
-- Applied TF-IDF vectorization on problem tags
-- Used solve count as an additional numerical feature
+- Applied TF-IDF vectorization to the combined text
+- Engineered keyword frequency features using algorithm-related terms such as *graph*, *dp*, and *recursion*
 
 ### Models Used
-- Classification Model: Logistic Regression
-- Regression Model: Random Forest Regressor
-
-A hybrid approach was adopted after experimentation to achieve better overall performance.
+Multiple models were evaluated during experimentation, including Logistic Regression, Linear Regression, Support Vector Machines, and Gradient Boosting.  
+Based on empirical results, the following models were selected as final:
+- **Classification:** Random Forest Classifier
+- **Regression:** Random Forest Regressor
 
 ---
 
-##  Evaluation Metrics
+## Evaluation Metrics
 
 ### Classification
-- Accuracy: 87.5%
+- Accuracy: 0.5115
 
 ### Regression
-- Mean Absolute Error (MAE): 167.94
-- Root Mean Squared Error (RMSE): 228.15
+- Mean Absolute Error (MAE): 1.73
+- Root Mean Squared Error (RMSE): 2.07
 
-These metrics indicate reliable performance for both difficulty classification and rating prediction.
+These metrics reflect realistic performance for text-based difficulty prediction.
 
 ---
 
-##  Web Interface
+## Web Interface
 A web interface was built using Streamlit that allows users to:
-- Enter problem tags
-- Enter the number of users who solved the problem
-- Instantly view the predicted difficulty level and difficulty rating
+- Enter the full textual description of a programming problem
+- View the predicted difficulty class and difficulty score
 
-The application runs locally and uses the trained models for inference.
+The application performs inference using the trained machine learning models.
 
 ---
 
-##  Steps to Run the Project Locally
+## Steps to Run the Project Locally
 
 ```bash
 # 1. Clone the repository
@@ -82,7 +79,7 @@ python3 train.py
 # 4. Run the web application
 streamlit run app.py
 
-# Demo Video: https://drive.google.com/file/d/1-COia1tOTDnNwZ0drxwDWRCInpChGeMd/view?usp=sharing
+# Demo Video: 
 
 # Report: The detailed project report is available in the /report folder.
 
