@@ -82,7 +82,7 @@ python3 train.py
 # 4. Run the web application
 streamlit run app.py
 
-# Demo Video: 
+# Demo Video: https://drive.google.com/file/d/1-COia1tOTDnNwZ0drxwDWRCInpChGeMd/view?usp=sharing
 
 # Report: The detailed project report is available in the /report folder.
 
