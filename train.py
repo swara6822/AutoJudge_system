@@ -1,11 +1,9 @@
 import pandas as pd
 import numpy as np
-
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
-from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 import joblib
 import os
@@ -16,56 +14,51 @@ import seaborn as sns
 
 # Load dataset
 
-DATA_PATH = "data/problems.csv"
-df = pd.read_csv(DATA_PATH)
-# Drop rows with missing critical values
-df = df.dropna(subset=["Solved", "Problem Rating"])
+DATA_PATH = "data/problems_data.jsonl"
+df = pd.read_json(DATA_PATH, lines=True)
 
 print("Dataset loaded successfully")
 print(df.head())
 
 # Basic preprocessing
+# Combine all text fields into one and handles missing values
+df["text"] = df["title"].fillna("") + " " + df["description"].fillna("")
 
-# Fill missing tag values with empty string
-tag_cols = ["Problem_tag_1", "Problem_tag_2", "Problem_tag_3", "Problem_tag_4"]
-for col in tag_cols:
-    df[col] = df[col].fillna("")
+# Keyword frequency feature (algorithmic cues from text)
+keywords = [
+    "graph", "tree", "dp", "dynamic", "recursion",
+    "greedy", "math", "string", "array", "sorting"
+]
 
-# Combine tags into single text feature
-df["tags_text"] = (
-    df["Problem_tag_1"] + " " +
-    df["Problem_tag_2"] + " " +
-    df["Problem_tag_3"] + " " +
-    df["Problem_tag_4"]
-)
+def keyword_frequency(text):
+    text = text.lower()
+    return [text.count(k) for k in keywords]
 
-# Convert Solved column to numeric (remove 'x')
-df["Solved"] = (
-    df["Solved"]
-    .astype(str)
-    .str.replace("x", "", regex=False)
-    .astype(int)
+keyword_features = np.array(
+    df["text"].apply(keyword_frequency).tolist()
 )
 
 # Create difficulty labels (classification)
 
-def get_difficulty(rating):
-    if rating <= 1200:
+def get_difficulty(score):
+    if score < 4:
         return "Easy"
-    elif rating <= 1800:
+    elif score < 7:
         return "Medium"
     else:
         return "Hard"
 
-df["difficulty"] = df["Problem Rating"].apply(get_difficulty)
+df["difficulty"] = df["problem_score"].apply(get_difficulty)
 
 # Feature extraction (TF-IDF)
 
-tfidf = TfidfVectorizer()
-X_tags = tfidf.fit_transform(df["tags_text"])
+tfidf = TfidfVectorizer(
+    max_features=5000,
+    stop_words="english"
+)
+X_tfidf = tfidf.fit_transform(df["text"])
+X = np.hstack([X_tfidf.toarray(), keyword_features])
 
-# Add solved count as numeric feature
-X = np.hstack((X_tags.toarray(), df[["Solved"]].values))
 
 # Targets
 
@@ -74,7 +67,7 @@ label_encoder = LabelEncoder()
 y_class = label_encoder.fit_transform(df["difficulty"])
 
 # Regression target
-y_reg = df["Problem Rating"]
+y_reg = df["problem_score"]
 
 # Train-test split
 
@@ -82,50 +75,24 @@ X_train, X_test, y_class_train, y_class_test, y_reg_train, y_reg_test = train_te
     X, y_class, y_reg, test_size=0.2, random_state=42
 )
 
-# Train models
 
-# # Classification model
-# clf = LogisticRegression(max_iter=1000)
-# clf.fit(X_train, y_class_train)
+# 7. Train models (Random Forest)
 
-# # Regression model
-# reg = LinearRegression()
-# reg.fit(X_train, y_reg_train)
-
-
-# 7. Train improved models (Random Forest)
-
-#  Classification model
-# clf = RandomForestClassifier(
-#     n_estimators=200,
-#     random_state=42,
-#     n_jobs=-1
-# )
-# clf.fit(X_train, y_class_train)
-
-# Regression model
-# reg = RandomForestRegressor(
-#     n_estimators=200,
-#     random_state=42,
-#     n_jobs=-1
-# )
-# reg.fit(X_train, y_reg_train)
-
-
-# 7. Train final models
-
-# Classification model (Logistic Regression)
-clf = LogisticRegression(max_iter=1000)
+# Classification model
+clf = RandomForestClassifier(
+    n_estimators=200,
+    random_state=42,
+    n_jobs=-1
+)
 clf.fit(X_train, y_class_train)
 
-# Regression model (Random Forest)
+# Regression model
 reg = RandomForestRegressor(
     n_estimators=200,
     random_state=42,
     n_jobs=-1
 )
 reg.fit(X_train, y_reg_train)
-
 
 
 # Evaluation
@@ -172,5 +139,7 @@ joblib.dump(clf, "models/classifier.pkl")
 joblib.dump(reg, "models/regressor.pkl")
 joblib.dump(tfidf, "models/tfidf.pkl")
 joblib.dump(label_encoder, "models/label_encoder.pkl")
+joblib.dump(keywords, "models/keywords.pkl")
+
 
 print("Models saved successfully in /models")
