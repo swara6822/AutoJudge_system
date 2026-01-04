@@ -68,23 +68,24 @@ The application runs locally and uses the trained models for inference.
 
 ##  Steps to Run the Project Locally
 
-### 1. Clone the repository
 ```bash
+# 1. Clone the repository
 git clone https://github.com/swara6822/AutoJudge_system.git
 cd AutoJudge_system
 
-### 2. Install dependencies
-```bash
+# 2. Install dependencies
 pip install -r requirements.txt
 
-### 3. Train the models
-```bash
+# 3. Train the models
 python3 train.py
 
-### 4. Run the web application
-```bash
+# 4. Run the web application
 streamlit run app.py
 
-###Demo Video:
+# Demo Video: 
 
-## Author: Swara Vikram Chalikwar
+# Report: The detailed project report is available in the /report folder.
+
+# Name: Swara Vikram Chalikwar
+# Year:2nd
+# Enrollment No: 24115153 
