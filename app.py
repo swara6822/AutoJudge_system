@@ -33,6 +33,8 @@ clf = joblib.load("models/classifier.pkl")
 reg = joblib.load("models/regressor.pkl")
 tfidf = joblib.load("models/tfidf.pkl")
 label_encoder = joblib.load("models/label_encoder.pkl")
+keywords = joblib.load("models/keywords.pkl")
+
 
 # Title
 
@@ -41,7 +43,7 @@ st.subheader("Predict Programming Problem Difficulty")
 
 st.write(
     "This application predicts the difficulty level and rating of a "
-    "programming problem based on its tags and solve statistics."
+    "programming problem based on its textual description."
 )
 
 st.divider()
@@ -50,28 +52,33 @@ st.divider()
 
 st.markdown("### 🔹 Enter Problem Details")
 
-tag1 = st.text_input("Problem Tag 1", placeholder="e.g. dp")
-tag2 = st.text_input("Problem Tag 2", placeholder="e.g. greedy")
-tag3 = st.text_input("Problem Tag 3", placeholder="e.g. graphs")
-tag4 = st.text_input("Problem Tag 4", placeholder="optional")
-
-solved = st.number_input(
-    "Number of users who solved the problem",
-    min_value=0,
-    value=3000,
-    step=100
+problem_text = st.text_area(
+    "Enter the full problem description",
+    placeholder="Paste the problem statement here...",
+    height=250
 )
 
 st.divider()
 
+def keyword_frequency(text):
+    text = text.lower()
+    return [text.count(k) for k in keywords]
+
 # Prediction
 
 if st.button("🔍 Predict Difficulty"):
-    tags_text = f"{tag1} {tag2} {tag3} {tag4}".strip()
+    text = problem_text.strip()
 
-    X_tags = tfidf.transform([tags_text])
-    X_input = np.hstack((X_tags.toarray(), [[solved]]))
+    if not text:
+        st.warning("Please enter a problem description.")
+        st.stop()
 
+    X_tfidf = tfidf.transform([text])
+    kw_features = np.array([keyword_frequency(text)])
+
+    X_input = np.hstack([X_tfidf.toarray(), kw_features])
+
+    
     class_pred_encoded = clf.predict(X_input)
     class_pred = label_encoder.inverse_transform(class_pred_encoded)[0]
 
@@ -89,7 +96,7 @@ if st.button("🔍 Predict Difficulty"):
 
     st.markdown(f"**Predicted Difficulty Rating:** `{rating_pred}`")
 
-    st.caption("Prediction is based on problem tags and historical solve statistics.")
+    st.caption("Prediction is based on the problem's textual description.")
 
 st.divider()
 
