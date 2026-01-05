@@ -13,11 +13,12 @@ Predictions are based solely on the textual description of programming problems.
 The dataset used in this project was provided as part of the project guidelines. It consists of programming problems with the following fields:
 - Problem title
 - Problem description
-- Additional textual fields (input/output descriptions, sample I/O)
+- Additional textual fields (input/output descriptions) 
+- sample I/O
 - Difficulty scores (`problem_score`, `problem_class`)
 - Problem URL
 
-In this implementation, only the problem title and main description were used as input features. Other textual fields and non-textual metadata were excluded.
+In this implementation, only the problem title and main description were used as input features. Other non-textual metadata were excluded.
 
 The dataset is stored in JSON Lines (`.jsonl`) format and is available in the `data/` directory.
 
@@ -79,7 +80,7 @@ python3 train.py
 # 4. Run the web application
 streamlit run app.py
 
-# Demo Video: 
+# Demo Video: https://drive.google.com/file/d/1L_5fhGDA9U3fOSu4E8xOIigImyyXQQbp/view?usp=sharing
 
 # Report: The detailed project report is available in the /report folder.
 
