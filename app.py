@@ -53,9 +53,20 @@ st.divider()
 st.markdown("### 🔹 Enter Problem Details")
 
 problem_text = st.text_area(
-    "Enter the full problem description",
-    placeholder="Paste the problem statement here...",
+    "Problem Description",
+    placeholder="Paste the main problem description here...",
     height=250
+)
+input_desc = st.text_area(
+    "Input Description",
+    placeholder="Describe the input format (optional)...",
+    height=150
+)
+
+output_desc = st.text_area(
+    "Output Description",
+    placeholder="Describe the output format (optional)...",
+    height=120
 )
 
 st.divider()
